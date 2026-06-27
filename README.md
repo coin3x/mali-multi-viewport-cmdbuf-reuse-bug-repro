@@ -4,7 +4,7 @@ on my own device).
 
 The bug is that, when a command buffer is used to submit `vkCmdSetViewport`,
 and any index of the would-be-set viewports is greater than `0`, it goes into a state.
-In this state, draws submitted through this command buffer will fail drawing if the
+In this state, subsequent draws (e.g. after a reset) submitted through this command buffer will fail drawing if the
 bound pipeline turned on dynamic states of `VK_DYNAMIC_STATE_VIEWPORT` or
 `VK_DYNAMIC_STATE_SCISSOR`, and with `VkPipelineViewportStateCreateInfo.viewportCount`
 and `.scissorCount` set to `1`. `vkCmdClearAttachments` seems not affected.
