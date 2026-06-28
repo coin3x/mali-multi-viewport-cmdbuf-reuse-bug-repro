@@ -1,6 +1,6 @@
-This repository contains the source code to reproduce a Vulkan bug that can be
-observed on the Mali-G1-Ultra MC12 GPU with driver version `54.1.0` (at least
-on my own device).
+This repository contains the source code to reproduce a bug that can be
+observed on the Mali-G1-Ultra MC12 GPU with Vulkan driver version `54.1.0` (at least
+on my device).
 
 The bug is that, when a command buffer is used to submit `vkCmdSetViewport`,
 and any index of the would-be-set viewports is greater than `0`, it goes into a state.
