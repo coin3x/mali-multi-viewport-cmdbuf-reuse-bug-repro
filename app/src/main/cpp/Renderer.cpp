@@ -126,23 +126,12 @@ void Renderer::render() {
 
     // Step 1: poison. Record only vkCmdSetViewport into the command buffer and submit it.
     // The command buffer handle is then reset and reused for Step 2 below.
-    VK_CHECK(vkResetCommandBuffer(command_buffer, 0));
-    RecordViewportSlotPoison(command_buffer);
-
-    const VkSubmitInfo poison_submit{
-        .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
-        .pNext = nullptr,
-        .waitSemaphoreCount = 0,
-        .pWaitSemaphores = nullptr,
-        .pWaitDstStageMask = nullptr,
-        .commandBufferCount = 1,
-        .pCommandBuffers = &command_buffer,
-        .signalSemaphoreCount = 0,
-        .pSignalSemaphores = nullptr,
-    };
-    VK_CHECK(vkQueueSubmit(queue, 1, &poison_submit, frame_fence));
-    VK_CHECK(vkWaitForFences(device, 1, &frame_fence, VK_TRUE, UINT64_MAX));
-    VK_CHECK(vkResetFences(device, 1, &frame_fence));
+    static bool poison_recorded = false;
+    if (!poison_recorded) {
+        poison_recorded = true;
+        VK_CHECK(vkResetCommandBuffer(command_buffer, 0));
+        RecordViewportSlotPoison(command_buffer);
+    }
 
     // Step 2: victim. Reuse the same VkCommandBuffer handle.
     VK_CHECK(vkResetCommandBuffer(command_buffer, 0));
