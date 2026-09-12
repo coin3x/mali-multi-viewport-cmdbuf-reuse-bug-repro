@@ -21,7 +21,7 @@ than `1` if you've previously set multiple viewports.
 You can modify the `repro_mode` field in `app/src/main/cpp/Renderer.h` to see
 how the normal/buggy behavior would look like.
 
-> Disclaimer: this repository contains source code generated with LLM, which may
-> include invalid code and will have licensing issue.
+> Warning: this repository contains source code that hasn't been fully deslopped,
+> which may include invalid code and will have licensing issue.
 
 [^1]:  The stored value is actually maximum seen viewport index plus 1.
