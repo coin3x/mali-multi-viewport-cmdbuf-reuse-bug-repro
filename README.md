@@ -1,21 +1,27 @@
-This repository contains the source code to reproduce a bug that can be
-observed on the Mali-G1-Ultra MC12 GPU with Vulkan driver version `54.1.0` (at least
-on my device).
+This repository contains source code to reproduce a bug that can be observed on
+the Vulkan driver versioned `54.1.0`, supplied with Android devices with the
+Mali-G1-Ultra GPU.
 
-The bug is that, when a command buffer is used to submit `vkCmdSetViewport`,
-and any index of the would-be-set viewports is greater than `0`, it goes into a state.
-In this state, subsequent draws (e.g. after a reset) submitted through this command buffer will fail drawing if the
-bound pipeline turned on dynamic states of `VK_DYNAMIC_STATE_VIEWPORT` or
-`VK_DYNAMIC_STATE_SCISSOR`, and with `VkPipelineViewportStateCreateInfo.viewportCount`
-and `.scissorCount` set to `1`. `vkCmdClearAttachments` seems not affected.
-Draw calls work if either `viewportCount` or `scissorCount` is greater than `1`.
+On this driver, `vkCmdSetViewport` writes the maximum viewport index seen[^1]
+into command-buffer-local internal state, which won't be cleared by `vkResetCommandBuffer`.
 
-Workarounds include not reusing the same command buffer (seriously?), or use
-a `viewportCount` value greater than `1` if you've previously set multiple viewports.
+The bug is that, with the maximum viewport index seen greater than `0`, subsequent
+draws will not succeed (but without returning error) if the bound pipeline
+turned on dynamic states of `VK_DYNAMIC_STATE_VIEWPORT` or `VK_DYNAMIC_STATE_SCISSOR`,
+and with `VkPipelineViewportStateCreateInfo.viewportCount` and `.scissorCount`
+set to `1`. This configuration apparently selects a single viewport path that
+doesn't work with `max_seen_vp_idx > 0`.
+
+`vkCmdClearAttachments` seems not affected. Draw calls work if either `viewportCount`
+or `scissorCount` is greater than `1`.
+
+Workaround: When reusing command buffers, use a `viewportCount` value greater
+than `1` if you've previously set multiple viewports.
 
 You can modify the `repro_mode` field in `app/src/main/cpp/Renderer.h` to see
 how the normal/buggy behavior would look like.
 
 > Disclaimer: this repository contains source code generated with LLM, which may
-> include invalid code and will have licensing issue. The author (do I count as one?)
-> is also very unfamiliar with Vulkan.
+> include invalid code and will have licensing issue.
+
+[^1]:  The stored value is actually maximum seen viewport index plus 1.
